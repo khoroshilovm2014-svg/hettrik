@@ -5,13 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Хет-Трик Каталог</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -26,96 +24,27 @@
         .header {
             background: var(--tg-theme-header-bg-color, #1e2b3a);
             color: var(--tg-theme-header-text-color, #ffffff);
-            padding: 12px 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .header h1 {
+            padding: 16px;
+            text-align: center;
             font-size: 18px;
             font-weight: 600;
         }
 
-        .pdf-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            margin: 10px;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
         .pdf-viewer {
             flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            border: none;
         }
 
-        .pdf-page {
-            max-width: 100%;
-            height: auto;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            background: white;
-            display: none;
-        }
-
-        .pdf-page.active {
-            display: block;
-        }
-
-        .controls {
-            background: var(--tg-theme-header-bg-color, #1e2b3a);
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            color: white;
-        }
-
-        .nav-button {
+        .download-btn {
             background: var(--tg-theme-button-color, #31b545);
             color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 22px;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            width: 100%;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: opacity 0.2s;
-        }
-
-        .nav-button:active {
-            opacity: 0.7;
-        }
-
-        .nav-button:disabled {
-            opacity: 0.3;
-            pointer-events: none;
-        }
-
-        .page-info {
-            font-size: 16px;
-            font-weight: 500;
-            min-width: 80px;
             text-align: center;
         }
 
@@ -152,36 +81,6 @@
             text-align: center;
             padding: 20px;
         }
-
-        .download-btn {
-            background: var(--tg-theme-button-color, #31b545);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            text-align: center;
-            border-radius: 0;
-        }
-
-        .zoom-controls {
-            display: flex;
-            gap: 10px;
-            margin-left: auto;
-        }
-
-        .zoom-btn {
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 18px;
-            font-size: 18px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -191,182 +90,27 @@
     </div>
 
     <div class="header">
-        <h1>⚽ Хет-Трик Каталог</h1>
+        ⚽ Хет-Трик Каталог
     </div>
 
-    <div class="pdf-container">
-        <div class="pdf-viewer" id="pdfViewer"></div>
-        
-        <div class="controls">
-            <button class="nav-button" id="prevPage" onclick="prevPage()">←</button>
-            <span class="page-info" id="pageInfo">0 / 0</span>
-            <button class="nav-button" id="nextPage" onclick="nextPage()">→</button>
-            
-            <div class="zoom-controls">
-                <button class="zoom-btn" onclick="zoomOut()">−</button>
-                <button class="zoom-btn" onclick="zoomIn()">+</button>
-            </div>
-        </div>
-    </div>
+    <iframe class="pdf-viewer" 
+            src="https://docs.google.com/viewer?url=https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf&embedded=true"
+            frameborder="0">
+    </iframe>
 
-    <!-- Кнопка скачать во всю ширину внизу -->
-    <button class="download-btn" onclick="downloadPDF()">📥 Скачать</button>
+    <button class="download-btn" onclick="downloadPDF()">📥 Скачать каталог</button>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // Настройки
         const PDF_URL = 'https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf';
-        
-        let pdfDoc = null;
-        let currentPage = 1;
-        let totalPages = 0;
-        let scale = 1.5;
-        let pages = {};
 
-        // Инициализация PDF.js
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
-        // Загрузка PDF
-        async function loadPDF() {
-            try {
-                const loadingTask = pdfjsLib.getDocument(PDF_URL);
-                pdfDoc = await loadingTask.promise;
-                totalPages = pdfDoc.numPages;
-                
-                document.getElementById('pageInfo').textContent = `1 / ${totalPages}`;
-                
-                // Предзагружаем первую страницу
-                await renderPage(1);
-                
-                // Предзагружаем следующие пару страниц
-                for (let i = 2; i <= Math.min(3, totalPages); i++) {
-                    renderPage(i);
-                }
-                
-                document.getElementById('loading').style.display = 'none';
-                
-            } catch (error) {
-                console.error('Ошибка загрузки PDF:', error);
-                document.getElementById('loading').innerHTML = `
-                    <div class="error">
-                        ❌ Ошибка загрузки каталога<br>
-                        <button class="download-btn" onclick="downloadPDF()">Скачать PDF</button>
-                    </div>
-                `;
-            }
-        }
-
-        // Отрисовка страницы
-        async function renderPage(pageNum) {
-            if (pages[pageNum]) {
-                // Страница уже загружена
-                return pages[pageNum];
-            }
-
-            try {
-                const page = await pdfDoc.getPage(pageNum);
-                const viewport = page.getViewport({ scale: scale });
-                
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                canvas.className = 'pdf-page';
-                canvas.id = `page-${pageNum}`;
-                
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-                
-                await page.render(renderContext).promise;
-                
-                pages[pageNum] = canvas;
-                return canvas;
-                
-            } catch (error) {
-                console.error(`Ошибка загрузки страницы ${pageNum}:`, error);
-                return null;
-            }
-        }
-
-        // Показать страницу
-        async function showPage(pageNum) {
-            if (pageNum < 1 || pageNum > totalPages) return;
-            
-            currentPage = pageNum;
-            document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
-            
-            const viewer = document.getElementById('pdfViewer');
-            
-            // Скрываем все страницы
-            document.querySelectorAll('.pdf-page').forEach(el => {
-                el.classList.remove('active');
-            });
-            
-            // Показываем нужную страницу
-            if (pages[pageNum]) {
-                viewer.appendChild(pages[pageNum]);
-                pages[pageNum].classList.add('active');
-            } else {
-                const canvas = await renderPage(pageNum);
-                if (canvas) {
-                    viewer.appendChild(canvas);
-                    canvas.classList.add('active');
-                }
-            }
-            
-            // Предзагружаем следующую страницу
-            if (pageNum < totalPages && !pages[pageNum + 1]) {
-                renderPage(pageNum + 1);
-            }
-            
-            // Предзагружаем предыдущую страницу
-            if (pageNum > 1 && !pages[pageNum - 1]) {
-                renderPage(pageNum - 1);
-            }
-        }
-
-        // Навигация
-        function nextPage() {
-            if (currentPage < totalPages) {
-                showPage(currentPage + 1);
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
-
-        function prevPage() {
-            if (currentPage > 1) {
-                showPage(currentPage - 1);
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
-
-        // Зум
-        function zoomIn() {
-            scale += 0.25;
-            pages = {}; // Очищаем кэш
-            document.getElementById('pdfViewer').innerHTML = '';
-            renderPage(currentPage).then(() => {
-                showPage(currentPage);
-            });
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        function zoomOut() {
-            if (scale > 0.75) {
-                scale -= 0.25;
-                pages = {}; // Очищаем кэш
-                document.getElementById('pdfViewer').innerHTML = '';
-                renderPage(currentPage).then(() => {
-                    showPage(currentPage);
-                });
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
+        // Скрываем загрузку после загрузки iframe
+        document.querySelector('iframe').onload = function() {
+            document.getElementById('loading').style.display = 'none';
+        };
 
         // Скачать PDF
         function downloadPDF() {
@@ -374,42 +118,22 @@
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-        // Закрыть приложение (вызывается из Telegram)
-        function closeApp() {
-            tg.close();
-        }
-
-        // Обработка свайпов для мобильных
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        document.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
-
-        document.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }, { passive: true });
-
-        function handleSwipe() {
-            const swipeThreshold = 50;
-            if (touchEndX < touchStartX - swipeThreshold) {
-                // Свайп влево - следующая страница
-                nextPage();
-            } else if (touchEndX > touchStartX + swipeThreshold) {
-                // Свайп вправо - предыдущая страница
-                prevPage();
+        // Таймаут на случай ошибки
+        setTimeout(function() {
+            if (document.getElementById('loading').style.display !== 'none') {
+                document.getElementById('loading').innerHTML = `
+                    <div class="error">
+                        ❌ Не удалось загрузить<br>
+                        <button class="download-btn" onclick="downloadPDF()" style="margin-top:20px">Скачать PDF</button>
+                    </div>
+                `;
             }
-        }
+        }, 10000);
 
-        // Запуск
-        loadPDF();
-
-        // Настройка кнопки Telegram (скрыта)
+        // Закрытие через Telegram
         tg.MainButton.setText('Закрыть');
         tg.MainButton.hide();
-        tg.MainButton.onClick(closeApp);
+        tg.MainButton.onClick(() => tg.close());
     </script>
 </body>
 </html>
