@@ -19,7 +19,6 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            position: relative;
         }
 
         .header {
@@ -32,44 +31,56 @@
             z-index: 10;
         }
 
-        .pdf-viewer {
+        .pdf-wrapper {
             flex: 1;
+            position: relative;
             width: 100%;
-            border: none;
+            overflow: hidden;
             background: transparent;
+        }
+
+        .pdf-viewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .button-container {
             position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
+            bottom: 25px;
+            left: 20px;
+            right: 20px;
             display: flex;
             justify-content: center;
-            pointer-events: none;
-            z-index: 100;
+            z-index: 1000;
         }
 
         .download-btn {
             background: var(--tg-theme-button-color, #31b545);
             color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
-            padding: 16px 32px;
+            padding: 18px 24px;
             font-size: 18px;
             font-weight: 600;
-            border-radius: 40px;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 50px;
             cursor: pointer;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
             transition: transform 0.2s, opacity 0.2s;
             -webkit-tap-highlight-color: transparent;
-            pointer-events: auto;
-            backdrop-filter: blur(0);
-            border: 2px solid rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.15);
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
 
         .download-btn:active {
-            transform: scale(0.96);
+            transform: scale(0.97);
             opacity: 0.9;
         }
 
@@ -84,7 +95,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 2000;
         }
 
         .spinner {
@@ -113,15 +124,14 @@
             border: none;
             padding: 16px 32px;
             font-size: 16px;
-            border-radius: 30px;
+            border-radius: 50px;
             margin-top: 20px;
             cursor: pointer;
         }
 
-        /* Скрываем всякие лишние элементы Google Docs */
+        /* Скрываем все элементы управления Google Docs */
         iframe {
-            position: relative;
-            z-index: 1;
+            pointer-events: auto;
         }
     </style>
 </head>
@@ -135,10 +145,12 @@
         ⚽ Хет-Трик Каталог
     </div>
 
-    <iframe class="pdf-viewer" 
-            src="https://docs.google.com/viewer?url=https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf&embedded=true&chrome=false&hl=ru&rm=minimal"
-            frameborder="0">
-    </iframe>
+    <div class="pdf-wrapper">
+        <iframe class="pdf-viewer" 
+                src="https://docs.google.com/viewer?url=https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf&embedded=true&chrome=false&hl=ru&rm=minimal&toolbar=0&navpanes=0&scrollbar=0"
+                frameborder="0">
+        </iframe>
+    </div>
 
     <div class="button-container">
         <button class="download-btn" onclick="downloadPDF()">
@@ -153,29 +165,67 @@
 
         const PDF_URL = 'https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf';
 
+        // Функция для попытки скрыть элементы Google Docs
+        function hideGoogleElements() {
+            try {
+                const iframe = document.querySelector('iframe');
+                if (!iframe || !iframe.contentDocument) return;
+                
+                // Пытаемся найти и скрыть элементы управления
+                const style = iframe.contentDocument.createElement('style');
+                style.textContent = `
+                    .ndfHFb-c4YZDc-Wrql6b, .ndfHFb-c4YZDc-TObxHb, .ndfHFb-c4YZDc-LgbsSe,
+                    [role="toolbar"], .ndfHFb-c4YZDc-g7RjCd, .ndfHFb-c4YZDc-B7I4Od,
+                    .ndfHFb-c4YZDc-JNdkSc, .ndfHFb-c4YZDc-s2gQvd, .ndfHFb-c4YZDc-ornU0b,
+                    .ndfHFb-c4YZDc-i5oIFb, [jsname="LgbsSe"], .ndfHFb-c4YZDc-DpZnpd,
+                    .ndfHFb-c4YZDc-sxdXxf, .ndfHFb-c4YZDc-JwG3vd, .ndfHFb-c4YZDc-wrql6b,
+                    .ndfHFb-c4YZDc-awz3Jc, .docs-sheet, .docs-material, .ndfHFb-c4YZDc-ea9kqc,
+                    .ndfHFb-c4YZDc-DWZOvc, .ndfHFb-c4YZDc-XTxNec, .ndfHFb-c4YZDc-M8fvcb,
+                    .ndfHFb-c4YZDc-cYFgJe, .docs-viewer-header, .ndfHFb-c4YZDc-GX5aJc
+                    {
+                        display: none !important;
+                        opacity: 0 !important;
+                        visibility: hidden !important;
+                        pointer-events: none !important;
+                        height: 0 !important;
+                        width: 0 !important;
+                        overflow: hidden !important;
+                        position: absolute !important;
+                        top: -9999px !important;
+                        left: -9999px !important;
+                    }
+                    
+                    body {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        overflow: auto !important;
+                    }
+                `;
+                
+                iframe.contentDocument.head.appendChild(style);
+                
+                // Также пробуем скрыть через атрибуты
+                const elements = iframe.contentDocument.querySelectorAll('[class*="ndfHFb"], [class*="docs-"], [role="toolbar"], [jsname]');
+                elements.forEach(el => {
+                    el.style.display = 'none';
+                    el.style.visibility = 'hidden';
+                    el.style.opacity = '0';
+                    el.style.pointerEvents = 'none';
+                });
+                
+            } catch(e) {
+                console.log('Не удалось скрыть элементы Google Docs');
+            }
+        }
+
         // Ждём загрузку iframe
         document.querySelector('iframe').onload = function() {
             document.getElementById('loading').style.display = 'none';
             
-            // Пытаемся скрыть элементы Google Docs через MutationObserver
-            try {
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.addedNodes.length) {
-                            // Ищем элементы Google Docs и скрываем
-                            const toolbar = document.querySelector('iframe').contentDocument?.querySelector('.ndfHFb-c4YZDc-Wrql6b');
-                            if (toolbar) toolbar.style.display = 'none';
-                        }
-                    });
-                });
-                
-                observer.observe(document.querySelector('iframe').contentDocument?.body || document.body, {
-                    childList: true,
-                    subtree: true
-                });
-            } catch(e) {
-                console.log('Не удалось скрыть элементы');
-            }
+            // Пробуем скрыть элементы сразу
+            setTimeout(hideGoogleElements, 1000);
+            setTimeout(hideGoogleElements, 2000);
+            setTimeout(hideGoogleElements, 3000);
         };
 
         // Скачать PDF
@@ -203,4 +253,3 @@
     </script>
 </body>
 </html>
-
