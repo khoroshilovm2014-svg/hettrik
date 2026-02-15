@@ -157,11 +157,13 @@
             background: var(--tg-theme-button-color, #31b545);
             color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
-            padding: 12px 24px;
-            border-radius: 24px;
+            padding: 14px;
             font-size: 16px;
-            margin-top: 20px;
+            font-weight: 600;
+            width: 100%;
             cursor: pointer;
+            text-align: center;
+            border-radius: 0;
         }
 
         .zoom-controls {
@@ -203,10 +205,12 @@
             <div class="zoom-controls">
                 <button class="zoom-btn" onclick="zoomOut()">−</button>
                 <button class="zoom-btn" onclick="zoomIn()">+</button>
-                <button class="zoom-btn" onclick="downloadPDF()">⬇️</button>
             </div>
         </div>
     </div>
+
+    <!-- Кнопка скачать во всю ширину внизу -->
+    <button class="download-btn" onclick="downloadPDF()">📥 Скачать</button>
 
     <script>
         let tg = window.Telegram.WebApp;
@@ -402,9 +406,9 @@
         // Запуск
         loadPDF();
 
-        // Настройка кнопки Telegram (но не показываем её)
+        // Настройка кнопки Telegram (скрыта)
         tg.MainButton.setText('Закрыть');
-        tg.MainButton.hide(); // Скрываем кнопку
+        tg.MainButton.hide();
         tg.MainButton.onClick(closeApp);
     </script>
 </body>
