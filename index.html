@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Хет-Трик Каталог</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,43 +15,71 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #f5f5f5;
-            height: 100vh;
+            background: var(--tg-theme-bg-color, #f5f5f5);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
         .header {
-            background: #1e2b3a;
-            color: white;
-            padding: 12px;
+            background: var(--tg-theme-header-bg-color, #1e2b3a);
+            color: var(--tg-theme-header-text-color, #ffffff);
+            padding: 16px;
             text-align: center;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        .pdf-container {
+        .pages-container {
             flex: 1;
-            width: 100%;
-            background: white;
+            padding: 10px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background: var(--tg-theme-bg-color, #f5f5f5);
         }
 
-        .pdf-viewer {
+        .page-wrapper {
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .page-image {
             width: 100%;
-            height: 100%;
-            border: none;
+            height: auto;
+            display: block;
+            border-radius: 8px;
         }
 
         .download-btn {
-            background: #31b545;
-            color: white;
+            background: var(--tg-theme-button-color, #31b545);
+            color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
-            padding: 14px;
-            font-size: 16px;
+            padding: 16px 24px;
+            font-size: 18px;
             font-weight: 600;
-            width: 100%;
+            width: calc(100% - 32px);
+            margin: 16px auto;
+            border-radius: 40px;
             cursor: pointer;
             text-align: center;
+            display: block;
+            box-shadow: 0 4px 12px rgba(49, 181, 69, 0.3);
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            position: sticky;
+            bottom: 16px;
+            z-index: 20;
+        }
+
+        .download-btn:active {
+            transform: scale(0.97);
+            opacity: 0.9;
         }
 
         .loading {
@@ -59,33 +88,62 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: #f5f5f5;
+            background: var(--tg-theme-bg-color, #f5f5f5);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(49, 181, 69, 0.2);
+            border-top-color: var(--tg-theme-button-color, #31b545);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: var(--tg-theme-hint-color, #666);
+            margin-bottom: 8px;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: var(--tg-theme-button-color, #31b545);
+            font-weight: 500;
+        }
+
+        .error {
+            color: #ff3b30;
+            text-align: center;
+            padding: 20px;
         }
     </style>
 </head>
 <body>
     <div class="loading" id="loading">
-        <div>Загрузка...</div>
+        <div class="spinner"></div>
+        <div class="loading-text">Конвертация каталога...</div>
+        <div class="progress-text" id="progress">Страница 0 из 46</div>
     </div>
 
     <div class="header">
         ⚽ Хет-Трик Каталог
     </div>
 
-    <div class="pdf-container">
-        <iframe class="pdf-viewer" 
-                id="pdfFrame"
-                src="https://docs.google.com/viewer?url=https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf&embedded=true"
-                frameborder="0">
-        </iframe>
-    </div>
+    <div class="pages-container" id="pagesContainer"></div>
 
     <button class="download-btn" onclick="downloadPDF()">
-        📥 Скачать каталог
+        📥 Скачать каталог PDF
     </button>
 
     <script>
@@ -94,19 +152,88 @@
         tg.expand();
 
         const PDF_URL = 'https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf';
+        
+        // Настройка PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        let totalPages = 46; // Можно узнать автоматически, но пока ставим сколько есть
+        let loadedPages = 0;
+
+        async function loadPDF() {
+            try {
+                // Загружаем PDF
+                const loadingTask = pdfjsLib.getDocument(PDF_URL);
+                const pdf = await loadingTask.promise;
+                totalPages = pdf.numPages;
+                
+                const container = document.getElementById('pagesContainer');
+                
+                // Конвертируем каждую страницу в картинку
+                for (let i = 1; i <= totalPages; i++) {
+                    const page = await pdf.getPage(i);
+                    
+                    // Настраиваем масштаб для хорошего качества
+                    const scale = 1.5;
+                    const viewport = page.getViewport({ scale: scale });
+                    
+                    // Создаем canvas для рендера
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    
+                    // Рендерим страницу
+                    const renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    
+                    await page.render(renderContext).promise;
+                    
+                    // Конвертируем canvas в картинку
+                    const img = document.createElement('img');
+                    img.src = canvas.toDataURL('image/jpeg', 0.9);
+                    img.className = 'page-image';
+                    img.alt = `Страница ${i}`;
+                    
+                    // Оборачиваем в div для отступов
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'page-wrapper';
+                    wrapper.appendChild(img);
+                    
+                    container.appendChild(wrapper);
+                    
+                    // Обновляем прогресс
+                    loadedPages++;
+                    document.getElementById('progress').textContent = 
+                        `Страница ${loadedPages} из ${totalPages}`;
+                }
+                
+                // Убираем загрузку
+                document.getElementById('loading').style.display = 'none';
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="error">
+                        ❌ Ошибка загрузки<br>
+                        <button class="download-btn" onclick="downloadPDF()" style="margin-top:20px; position:static;">
+                            Скачать PDF
+                        </button>
+                    </div>
+                `;
+            }
+        }
 
         function downloadPDF() {
             window.open(PDF_URL, '_blank');
+            tg.HapticFeedback.impactOccurred('medium');
         }
 
-        document.getElementById('pdfFrame').onload = function() {
-            document.getElementById('loading').style.display = 'none';
-        };
+        // Запускаем конвертацию
+        loadPDF();
 
-        setTimeout(() => {
-            document.getElementById('loading').style.display = 'none';
-        }, 3000);
-
+        // Скрываем кнопку Telegram
         tg.MainButton.hide();
     </script>
 </body>
