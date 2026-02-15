@@ -1,0 +1,31 @@
+[2026-01-26 14:28:23] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:28:29] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:28:36] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:28:42] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:28:51] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:29:01] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:29:13] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:29:25] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:29:47] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:30:17] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:39:20] Ошибка в button_handler: Query is too old and response timeout expired or query id is invalid
+[2026-01-26 14:39:20] Ошибка в button_handler: Query is too old and response timeout expired or query id is invalid
+[2026-01-26 14:40:44] Ошибка в button_handler: Can't parse entities: can't find end of the entity starting at byte offset 665
+[2026-01-26 14:40:47] Ошибка в button_handler: Can't parse entities: can't find end of the entity starting at byte offset 665
+[2026-01-26 14:47:27] Ошибка отправки каталога: Timed out
+[2026-01-26 14:47:35] Ошибка в button_handler: Query is too old and response timeout expired or query id is invalid
+[2026-01-26 14:48:05] Ошибка отправки каталога: Timed out
+[2026-01-26 14:49:15] Ошибка в button_handler: Can't parse entities: can't find end of the entity starting at byte offset 174
+[2026-01-26 14:49:17] Ошибка в button_handler: Can't parse entities: can't find end of the entity starting at byte offset 174
+[2026-01-26 14:58:02] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:58:07] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:58:14] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:58:22] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:58:29] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:58:41] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:58:57] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 14:59:14] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 15:01:02] Ошибка в button_handler: Can't parse entities: can't find end of the entity starting at byte offset 174
+[2026-01-26 15:01:16] Ошибка в view_orders: Message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message
+[2026-01-26 15:05:18] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+[2026-01-26 15:05:23] Ошибка: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
