@@ -45,12 +45,21 @@
             background: #31b545;
             color: white;
             border: none;
-            padding: 14px;
+            padding: 14px 20px;
             font-size: 16px;
             font-weight: 600;
-            width: 100%;
+            width: calc(100% - 32px);
+            margin: 12px auto;
+            border-radius: 30px;
             cursor: pointer;
             text-align: center;
+            display: block;
+            transition: opacity 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .download-btn:active {
+            opacity: 0.8;
         }
 
         .loading {
