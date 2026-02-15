@@ -37,7 +37,7 @@
             background: #ffffff;
             position: relative;
             overflow: hidden;
-            margin-bottom: 70px; /* Отступ для кнопки */
+            margin-bottom: 70px;
         }
 
         .pdf-viewer {
@@ -124,9 +124,10 @@
     </div>
 
     <div class="pdf-container">
+        <!-- Используем Microsoft Office Online вместо Google Docs -->
         <iframe class="pdf-viewer" 
                 id="pdfFrame"
-                src="https://docs.google.com/viewer?url=https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf&embedded=true&chrome=false&hl=ru&rm=minimal&navpanes=0&scrollbar=0"
+                src="https://view.officeapps.live.com/op/embed.aspx?src=https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf"
                 frameborder="0"
                 allowfullscreen>
         </iframe>
@@ -165,7 +166,6 @@
         // Скрываем кнопку Telegram
         tg.MainButton.hide();
 
-        // Дополнительная защита от ошибок
         pdfFrame.onerror = function() {
             loading.style.display = 'none';
         };
