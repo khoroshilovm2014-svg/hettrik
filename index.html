@@ -40,12 +40,23 @@
             background: var(--tg-theme-button-color, #31b545);
             color: var(--tg-theme-button-text-color, #ffffff);
             border: none;
-            padding: 16px;
+            padding: 16px 20px;
             font-size: 18px;
             font-weight: 600;
-            width: 100%;
+            width: calc(100% - 32px);
+            margin: 16px auto;
+            border-radius: 30px;
             cursor: pointer;
             text-align: center;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.2s, opacity 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .download-btn:active {
+            transform: scale(0.97);
+            opacity: 0.9;
         }
 
         .loading {
@@ -63,8 +74,8 @@
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border: 4px solid var(--tg-theme-button-color, #31b545);
             border-top-color: transparent;
             border-radius: 50%;
@@ -81,6 +92,17 @@
             text-align: center;
             padding: 20px;
         }
+
+        .error-btn {
+            background: var(--tg-theme-button-color, #31b545);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 16px 32px;
+            font-size: 16px;
+            border-radius: 30px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -94,11 +116,13 @@
     </div>
 
     <iframe class="pdf-viewer" 
-            src="https://docs.google.com/viewer?url=https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf&embedded=true"
+            src="https://docs.google.com/viewer?url=https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf&embedded=true&chrome=false"
             frameborder="0">
     </iframe>
 
-    <button class="download-btn" onclick="downloadPDF()">📥 Скачать каталог</button>
+    <button class="download-btn" onclick="downloadPDF()">
+        📥 Скачать каталог
+    </button>
 
     <script>
         let tg = window.Telegram.WebApp;
@@ -107,30 +131,26 @@
 
         const PDF_URL = 'https://khoroshilovm2014-svg.github.io/hettrik/Хет-Трик_catalogue.pdf';
 
-        // Скрываем загрузку после загрузки iframe
         document.querySelector('iframe').onload = function() {
             document.getElementById('loading').style.display = 'none';
         };
 
-        // Скачать PDF
         function downloadPDF() {
             window.open(PDF_URL, '_blank');
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-        // Таймаут на случай ошибки
         setTimeout(function() {
             if (document.getElementById('loading').style.display !== 'none') {
                 document.getElementById('loading').innerHTML = `
                     <div class="error">
                         ❌ Не удалось загрузить<br>
-                        <button class="download-btn" onclick="downloadPDF()" style="margin-top:20px">Скачать PDF</button>
+                        <button class="error-btn" onclick="downloadPDF()">Скачать PDF</button>
                     </div>
                 `;
             }
         }, 10000);
 
-        // Закрытие через Telegram
         tg.MainButton.setText('Закрыть');
         tg.MainButton.hide();
         tg.MainButton.onClick(() => tg.close());
