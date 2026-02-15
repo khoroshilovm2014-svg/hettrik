@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хет-Трик Каталог</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--tg-theme-bg-color, #f5f5f5);
+            color: var(--tg-theme-text-color, #000000);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: var(--tg-theme-header-bg-color, #1e2b3a);
+            color: var(--tg-theme-header-text-color, #ffffff);
+            padding: 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .categories {
+            display: flex;
+            overflow-x: auto;
+            padding: 16px;
+            gap: 12px;
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .categories::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .category-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background: var(--tg-theme-button-color, #31b545);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            font-size: 15px;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .category-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .category-btn.secondary {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            padding: 16px;
+            flex: 1;
+        }
+        
+        .product-card {
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .product-card:active {
+            transform: scale(0.98);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+        }
+        
+        .product-info {
+            padding: 16px;
+        }
+        
+        .product-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--tg-theme-text-color, #000000);
+        }
+        
+        .product-description {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #666666);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .product-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--tg-theme-button-color, #31b545);
+            margin-bottom: 12px;
+        }
+        
+        .order-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: var(--tg-theme-button-color, #31b545);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .order-btn:active {
+            opacity: 0.8;
+        }
+        
+        .back-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            background: var(--tg-theme-button-color, #31b545);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .back-btn.show {
+            display: flex;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: var(--tg-theme-hint-color, #666666);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            border-radius: 20px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--tg-theme-text-color, #000000);
+        }
+        
+        .modal-field {
+            margin-bottom: 16px;
+        }
+        
+        .modal-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--tg-theme-hint-color, #666666);
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--tg-theme-hint-color, #dddddd);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color, #31b545);
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .modal-btn.primary {
+            background: var(--tg-theme-button-color, #31b545);
+            color: var(--tg-theme-button-text-color, #ffffff);
+        }
+        
+        .modal-btn.secondary {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        
+        .success-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--tg-theme-button-color, #31b545);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 500;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 3000;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translate(-50%, -100%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+        
+        .nav-bar {
+            background: var(--tg-theme-header-bg-color, #1e2b3a);
+            padding: 12px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: var(--tg-theme-button-color, #31b545);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .nav-btn.secondary {
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚽ Хет-Трик Каталог</h1>
+        <p>Экипировка и сувениры для спортивных команд</p>
+    </div>
+    
+    <div class="categories">
+        <button class="category-btn" onclick="filterProducts('all')">Все товары</button>
+        <button class="category-btn secondary" onclick="filterProducts('clothing')">Одежда</button>
+        <button class="category-btn secondary" onclick="filterProducts('accessories')">Аксессуары</button>
+        <button class="category-btn secondary" onclick="filterProducts('souvenirs')">Сувениры</button>
+    </div>
+    
+    <div id="products" class="products-grid">
+        <!-- Товары будут загружаться сюда -->
+        <div class="loading">Загрузка каталога...</div>
+    </div>
+    
+    <div class="nav-bar">
+        <button class="nav-btn" onclick="contactManager()">💬 Менеджер</button>
+        <button class="nav-btn secondary" onclick="closeApp()">✖️ Закрыть</button>
+    </div>
+    
+    <button class="back-btn" onclick="scrollToTop()" id="backBtn">↑</button>
+    
+    <!-- Модальное окно заказа -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">Оформление заказа</div>
+            
+            <div class="modal-field">
+                <label class="modal-label">Ваше имя</label>
+                <input type="text" class="modal-input" id="orderName" placeholder="Введите имя">
+            </div>
+            
+            <div class="modal-field">
+                <label class="modal-label">Телефон</label>
+                <input type="tel" class="modal-input" id="orderPhone" placeholder="+7 (999) 999-99-99">
+            </div>
+            
+            <div class="modal-field">
+                <label class="modal-label">Комментарий к заказу</label>
+                <textarea class="modal-input" id="orderComment" rows="3" placeholder="Что именно вас интересует?"></textarea>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeModal()">Отмена</button>
+                <button class="modal-btn primary" onclick="submitOrder()">Отправить</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let tg = window.Telegram.WebApp;
+        let currentProduct = null;
+        
+        // Каталог товаров
+        const products = [
+            {
+                id: 1,
+                title: "Футбольная форма",
+                description: "Профессиональная форма для футбола. Дышащий материал, яркий дизайн.",
+                price: "от 3500 ₽",
+                category: "clothing",
+                image: "⚽"
+            },
+            {
+                id: 2,
+                title: "Ветровка командная",
+                description: "Стильная ветровка с логотипом команды. Защита от ветра и дождя.",
+                price: "4500 ₽",
+                category: "clothing",
+                image: "🧥"
+            },
+            {
+                id: 3,
+                title: "Худи с принтом",
+                description: "Теплое худи с уникальным дизайном вашей команды.",
+                price: "3800 ₽",
+                category: "clothing",
+                image: "👕"
+            },
+            {
+                id: 4,
+                title: "Шарф болельщика",
+                description: "Мягкий шарф с символикой команды. Длина 150см.",
+                price: "1200 ₽",
+                category: "accessories",
+                image: "🧣"
+            },
+            {
+                id: 5,
+                title: "Кепка с логотипом",
+                description: "Бейсболка с вышивкой. Регулируемый размер.",
+                price: "1500 ₽",
+                category: "accessories",
+                image: "🧢"
+            },
+            {
+                id: 6,
+                title: "Бутылка для воды",
+                description: "Спортивная бутылка 750мл с символикой команды.",
+                price: "800 ₽",
+                category: "accessories",
+                image: "💧"
+            },
+            {
+                id: 7,
+                title: "Кружка футбольная",
+                description: "Керамическая кружка 350мл с дизайном.",
+                price: "600 ₽",
+                category: "souvenirs",
+                image: "☕"
+            },
+            {
+                id: 8,
+                title: "Сумка спортивная",
+                description: "Вместительная сумка для формы и экипировки.",
+                price: "2200 ₽",
+                category: "accessories",
+                image: "🎒"
+            },
+            {
+                id: 9,
+                title: "Набор болельщика",
+                description: "Шарф + кепка + брелок в подарочной упаковке.",
+                price: "2500 ₽",
+                category: "souvenirs",
+                image: "🎁"
+            },
+            {
+                id: 10,
+                title: "Свитшот командный",
+                description: "Уютный свитшот из высококачественного футера.",
+                price: "3200 ₽",
+                category: "clothing",
+                image: "👚"
+            }
+        ];
+        
+        // Инициализация приложения
+        tg.ready();
+        tg.expand();
+        
+        // Заголовок
+        tg.MainButton.setText("Закрыть");
+        tg.MainButton.onClick(() => tg.close());
+        
+        // Отображение товаров
+        function displayProducts(filter = 'all') {
+            const container = document.getElementById('products');
+            
+            const filteredProducts = filter === 'all' 
+                ? products 
+                : products.filter(p => p.category === filter);
+            
+            if (filteredProducts.length === 0) {
+                container.innerHTML = '<div class="loading" style="grid-column: 1/-1;">Товары не найдены</div>';
+                return;
+            }
+            
+            let html = '';
+            filteredProducts.forEach(product => {
+                html += `
+                    <div class="product-card" onclick="selectProduct(${product.id})">
+                        <div class="product-image">${product.image}</div>
+                        <div class="product-info">
+                            <div class="product-title">${product.title}</div>
+                            <div class="product-description">${product.description}</div>
+                            <div class="product-price">${product.price}</div>
+                            <button class="order-btn" onclick="event.stopPropagation(); openOrderModal(${product.id})">
+                                🛒 Заказать
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Фильтрация товаров
+        function filterProducts(category) {
+            // Обновляем активную кнопку
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('secondary');
+            });
+            event.target.classList.remove('secondary');
+            event.target.classList.add('active');
+            
+            displayProducts(category);
+        }
+        
+        // Выбор товара
+        function selectProduct(productId) {
+            currentProduct = products.find(p => p.id === productId);
+            tg.HapticFeedback.impactOccurred('light');
+            openOrderModal(productId);
+        }
+        
+        // Открыть модальное окно заказа
+        function openOrderModal(productId) {
+            currentProduct = products.find(p => p.id === productId);
+            document.getElementById('modalTitle').textContent = `Заказ: ${currentProduct.title}`;
+            document.getElementById('orderModal').classList.add('show');
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+        
+        // Закрыть модальное окно
+        function closeModal() {
+            document.getElementById('orderModal').classList.remove('show');
+            document.getElementById('orderName').value = '';
+            document.getElementById('orderPhone').value = '';
+            document.getElementById('orderComment').value = '';
+        }
+        
+        // Отправить заказ
+        function submitOrder() {
+            const name = document.getElementById('orderName').value.trim();
+            const phone = document.getElementById('orderPhone').value.trim();
+            const comment = document.getElementById('orderComment').value.trim();
+            
+            if (!name || !phone) {
+                tg.showAlert('Пожалуйста, заполните имя и телефон');
+                return;
+            }
+            
+            // Отправляем данные в бот
+            const orderData = {
+                type: 'order',
+                product: currentProduct.title,
+                name: name,
+                phone: phone,
+                comment: comment,
+                date: new Date().toISOString()
+            };
+            
+            tg.sendData(JSON.stringify(orderData));
+            
+            // Показываем успех
+            showSuccess('Заказ отправлен! Менеджер свяжется с вами');
+            closeModal();
+            
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+        
+        // Показать сообщение об успехе
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+        }
+        
+        // Связаться с менеджером
+        function contactManager() {
+            tg.openTelegramLink('https://t.me/khoroshilova_anna');
+            tg.HapticFeedback.impactOccurred('light');
+        }
+        
+        // Закрыть приложение
+        function closeApp() {
+            tg.close();
+        }
+        
+        // Скролл вверх
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Показывать кнопку "наверх" при скролле
+        window.addEventListener('scroll', () => {
+            const backBtn = document.getElementById('backBtn');
+            if (window.scrollY > 300) {
+                backBtn.classList.add('show');
+            } else {
+                backBtn.classList.remove('show');
+            }
+        });
+        
+        // Загружаем товары при старте
+        displayProducts();
+        
+        // Обработка данных от бота
+        tg.onEvent('mainButtonClicked', function() {
+            tg.close();
+        });
+    </script>
+</body>
+</html>
